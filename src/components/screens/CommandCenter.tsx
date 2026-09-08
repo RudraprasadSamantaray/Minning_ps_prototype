@@ -1,17 +1,8 @@
 import React from 'react';
 import { useMining } from '../../context/MiningContext';
-import { PRODUCTION_TRAJECTORY_DATA, RISK_FACTORS, ACTIVE_ALERTS } from '../../data/miningData';
-import {
-  ResponsiveContainer,
-  ComposedChart,
-  Area,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Legend,
-} from 'recharts';
+import { ACTIVE_ALERTS } from '../../data/miningData';
+import { ProductionTrajectory3D } from '../charts/ProductionTrajectory3D';
+import { RiskFactors3D } from '../charts/RiskFactors3D';
 import {
   AlertTriangle,
   ArrowRight,
@@ -100,7 +91,7 @@ export const CommandCenter: React.FC = () => {
 
       {/* MAIN VISUAL SECTION: Trajectory Chart & Why? Risk Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Large Production Trajectory Chart (7 Cols) */}
+        {/* Large Production Trajectory 3D Chart (7 Cols) */}
         <div className="lg:col-span-7 industrial-card p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
             <div>
@@ -112,49 +103,11 @@ export const CommandCenter: React.FC = () => {
             </span>
           </div>
 
-          <div className="h-64 w-full my-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={PRODUCTION_TRAJECTORY_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
-                <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#64748B' }} />
-                <YAxis domain={[2000, 3200]} tick={{ fontSize: 11, fill: '#64748B' }} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', borderRadius: '8px', fontSize: '12px' }}
-                  formatter={(value: any, name: any) => [`${value} t`, name]}
-                />
-                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
-                <Area
-                  type="monotone"
-                  dataKey="forecast"
-                  name="Forecast Trajectory"
-                  stroke="#2563EB"
-                  fill="#DBEAFE"
-                  fillOpacity={0.4}
-                  strokeWidth={2}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="actual"
-                  name="Actual Output"
-                  stroke="#0B192C"
-                  strokeWidth={3}
-                  dot={{ r: 4, fill: '#0B192C' }}
-                  connectNulls={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="target"
-                  name="Target Quota"
-                  stroke="#94A3B8"
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={false}
-                />
-              </ComposedChart>
-            </ResponsiveContainer>
+          <div className="w-full my-2">
+            <ProductionTrajectory3D onExplainClick={() => setCurrentScreen('risk-explainability')} />
           </div>
 
-          <div className="p-2.5 bg-canvas rounded-lg border border-border flex items-center justify-between text-xs">
+          <div className="p-2.5 bg-canvas rounded-lg border border-border flex items-center justify-between text-xs mt-3">
             <span className="text-navy-secondary">
               Deficit gap of <strong>1,600 tonnes</strong> projected by Day 7 without operational intervention.
             </span>
@@ -168,7 +121,7 @@ export const CommandCenter: React.FC = () => {
           </div>
         </div>
 
-        {/* Shortfall Risk "WHY?" Breakdown (5 Cols) */}
+        {/* Shortfall Risk "WHY?" 3D Contributing Forces Breakdown (5 Cols) */}
         <div className="lg:col-span-5 industrial-card p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-border">
@@ -179,29 +132,15 @@ export const CommandCenter: React.FC = () => {
               <span className="text-[10px] font-mono text-slate-400">[Model Attribution]</span>
             </div>
 
-            <div className="mt-4 space-y-3">
-              <span className="text-[11px] font-bold text-navy-primary uppercase tracking-wider block font-mono">
+            <div className="mt-3">
+              <span className="text-[11px] font-bold text-navy-primary uppercase tracking-wider block font-mono mb-2">
                 WHY IS THE RISK HIGH?
               </span>
 
-              {RISK_FACTORS.map((factor, idx) => (
-                <div key={idx} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-navy-secondary font-medium truncate max-w-[220px]">
-                      {factor.factor.split('(')[0]}
-                    </span>
-                    <span className="font-mono font-bold text-red-600">
-                      +{factor.impactPercent}% Risk
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-amber-500 to-red-600 transition-all duration-300"
-                      style={{ width: `${(factor.impactPercent / 30) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+              <RiskFactors3D
+                variant="compact"
+                onFactorClick={() => setCurrentScreen('risk-explainability')}
+              />
             </div>
           </div>
 

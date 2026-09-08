@@ -5,16 +5,7 @@ import {
   WEATHER_STATUS,
   BLASTING_STATUS,
 } from '../../data/miningData';
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Cell,
-  CartesianGrid,
-} from 'recharts';
+import { RiskFactors3D } from '../charts/RiskFactors3D';
 import {
   AlertTriangle,
   Truck,
@@ -28,13 +19,6 @@ import {
 export const RiskExplainability: React.FC = () => {
   const { setCurrentScreen, loadPresetScenario } = useMining();
   const [activeEvidenceTab, setActiveEvidenceTab] = useState<'equipment' | 'weather' | 'blasting'>('equipment');
-
-  const waterfallData = [
-    { name: 'Equipment Downtime', impact: 28, fill: '#DC2626' },
-    { name: 'Rainfall Ingress (Zone B)', impact: 19, fill: '#EA580C' },
-    { name: 'Blasting Delay (#104)', impact: 14, fill: '#F59E0B' },
-    { name: 'Fleet Haul Constraints', impact: 11, fill: '#D97706' },
-  ];
 
   return (
     <div className="space-y-5">
@@ -94,54 +78,28 @@ export const RiskExplainability: React.FC = () => {
 
       {/* MAIN VISUAL SECTION: SHAP Contribution Visualization + AI Diagnosis */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* SHAP Feature Contribution Waterfall (7 Cols) */}
+        {/* SHAP Feature Contribution 3D Forces (7 Cols) */}
         <div className="lg:col-span-7 industrial-card p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
               <div>
                 <h3 className="text-sm font-bold text-navy-primary">WHY IS THE RISK AT 72%?</h3>
-                <p className="text-xs text-navy-muted">Quantified factor contribution to the shortfall risk</p>
+                <p className="text-xs text-navy-muted">Quantified factor contribution to the shortfall risk (click factor to inspect evidence)</p>
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-canvas border border-border text-navy-muted">
                 [Model Estimate]
               </span>
             </div>
 
-            <div className="h-60 w-full my-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={waterfallData}
-                  layout="vertical"
-                  margin={{ top: 10, right: 30, left: 30, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" horizontal={false} />
-                  <XAxis
-                    type="number"
-                    domain={[0, 35]}
-                    tick={{ fontSize: 11, fill: '#64748B' }}
-                    unit="% Risk"
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    tick={{ fontSize: 11, fill: '#0B192C', fontWeight: 500 }}
-                    width={150}
-                  />
-                  <Tooltip
-                    formatter={(val: any) => [`+${val}% to Shortfall Risk`, 'Impact']}
-                    contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', borderRadius: '8px', fontSize: '12px' }}
-                  />
-                  <Bar dataKey="impact" radius={[0, 4, 4, 0]}>
-                    {waterfallData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="w-full my-3">
+              <RiskFactors3D
+                variant="full"
+                onFactorClick={(_name, category) => setActiveEvidenceTab(category)}
+              />
             </div>
           </div>
 
-          <div className="p-2.5 bg-canvas rounded-lg border border-border text-xs text-navy-secondary">
+          <div className="p-2.5 bg-canvas rounded-lg border border-border text-xs text-navy-secondary mt-3">
             <span>
               <strong>Primary Drivers:</strong> Heavy equipment downtime (E12 hydraulic fault) and Zone B rainfall ponding account for over 65% of the risk weighting.
             </span>
